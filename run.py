@@ -7,15 +7,14 @@ from multiprocessing import Pool
 from multiprocessing.dummy import Pool as ThreadPool
 import os
 from pprint import pprint
-from shutil import copyfile
 import subprocess
 import sys
 
 # input
 parser = argparse.ArgumentParser()
+parser.add_argument('-auth', dest="AUTH", default="username:password", help="Earthdata drive username and password")
 parser.add_argument('-start', dest="DATE_START", default="2018-08-01", help="Date start")
 parser.add_argument('-end', dest="DATE_END", default="2018-11-01", help="Date end")
-parser.add_argument('-drive', dest="INPUT_DRIVE", default="Z:/", help="Data directory")
 parser.add_argument('-ddir', dest="DATA_DIR", default="data/", help="Data directory")
 parser.add_argument('-fdir', dest="FRAME_DIR", default="frames/", help="Frame directory")
 parser.add_argument('-log', dest="LOG_FILE", default="logs/errors.txt", help="Frame directory")
@@ -26,14 +25,15 @@ args = parser.parse_args()
 
 DATE_START = tuple([int(p) for p in args.DATE_START.strip()split("-")])
 DATE_END = tuple([int(p) for p in args.DATE_END.strip().split("-")])
-INPUT_DRIVE = args.INPUT_DRIVE
-INPUT_DIR = INPUT_DRIVE + "globalir/data/"
+AUTH = args.AUTH
 DATA_DIR = args.DATA_DIR
 FRAME_DIR = args.FRAME_DIR
 THREADS = min(args.THREADS, multiprocessing.cpu_count()) if args.THREADS > 0 else multiprocessing.cpu_count()
 OVERWRITE = (args.OVERWRITE > 0)
 DELETE_DATA = (args.DELETE_DATA > 0)
 LOG_FILE = args.LOG_FILE
+
+BASE_URL = "https://ghrcdrive.nsstc.nasa.gov/pub/globalir/data/"
 
 dateStart = datetime.datetime(year=DATE_START[0], month=DATE_START[1], day=DATE_START[2])
 dateEnd = datetime.datetime(year=DATE_END[0], month=DATE_END[1], day=DATE_END[2])
@@ -60,11 +60,11 @@ while date <= dateEnd:
         timeString = hours + minutes
 
         filename = date.strftime("globir.%y%j.") + timeString
-        # e.g. https://ghrc.nsstc.nasa.gov/pub/globalir/data/2018/0806/globir.18218.0015
-        infile = INPUT_DIR + date.strftime("%Y/%m%d/") + filename
+        # e.g. https://ghrcdrive.nsstc.nasa.gov/pub/globalir/data/2018/0806/globir.18218.0015
+        url = BASE_URL + date.strftime("%Y/%m%d/") + filename
 
         params.append({
-            "infile": infile,
+            "url": url,
             "datafile": DATA_DIR + filename,
             "imagefile": FRAME_DIR + filename + ".png"
         })
@@ -78,25 +78,21 @@ def logMessage(filename, message):
 
 def downloadAndProcessFrame(p):
     resp = {}
-    infile = p["infile"]
+    url = p["url"]
     datafile = p["datafile"]
     imagefile = p["imagefile"]
 
     if not os.path.isfile(datafile):
-        # command = ['curl', '-O', '-L', url] # We need -L because the URL redirects
-        # print(" ".join(command))
-        # finished = subprocess.check_call(command)
-        # os.rename(os.path.basename(datafile), datafile)
-
-        # Copy the file to the target location
-        # Requires Earthdata Drive: https://ghrcdrive.nsstc.nasa.gov/drive/help
-        copyfile(infile, datafile)
+        command = ['curl', '-O', '-L', '-u', AUTH, url] # We need -L because the URL redirects
+        print(" ".join(command))
+        finished = subprocess.check_call(command)
+        os.rename(os.path.basename(datafile), datafile)
 
     size = os.path.getsize(datafile)
 
     # Remove file if not downloaded properly
     if size < 100000:
-        error = "Error: could not properly download %s" % infile
+        error = "Error: could not properly download %s" % url
         os.remove(datafile)
         logMessage(LOG_FILE, error)
         resp["error"] = error
