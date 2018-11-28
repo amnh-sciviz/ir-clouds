@@ -58,12 +58,12 @@ with open(INPUT_FILE) as infile:
 
     print("%s errors." % len(rowErrors))
 
-    for line in range(lines):
-        i = lines-line-1
-        row = pixels[i]
-        all_zeros = not np.any(row)
-        if all_zeros:
-            pixels = np.delete(pixels, i, 0)
+    # for line in range(lines):
+    #     i = lines-line-1
+    #     row = pixels[i]
+    #     all_zeros = not np.any(row)
+    #     if all_zeros:
+    #         pixels = np.delete(pixels, i, 0)
 
 if pixels is not None:
     print("Saving %s..." % OUTPUT_FILE)

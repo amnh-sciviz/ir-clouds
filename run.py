@@ -20,7 +20,7 @@ parser.add_argument('-fdir', dest="FRAME_DIR", default="frames/", help="Frame di
 parser.add_argument('-log', dest="LOG_FILE", default="logs/errors.txt", help="Frame directory")
 parser.add_argument('-threads', dest="THREADS", default=3, type=int, help="Amount of parallel frames to process; -1 for maximum allowed by cpu")
 parser.add_argument('-overwrite', dest="OVERWRITE", default=0, type=int, help="Overwrite existing frames?")
-parser.add_argument('-del', dest="DELETE_DATA", default=0, type=int, help="Delete data after processing frame?")
+parser.add_argument('-del', dest="DELETE_DATA", default=1, type=int, help="Delete data after processing frame?")
 args = parser.parse_args()
 
 DATE_START = tuple([int(p) for p in args.DATE_START.strip()split("-")])

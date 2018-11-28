@@ -6,7 +6,8 @@ Scripts for generating images sequences for IR cloud data
 
 1. [Python](https://www.python.org/) 2.7.x+
 1. [Python Pillow](https://pillow.readthedocs.io/en/5.3.x/) - for image generation
-1. An [Earthdata](https://earthdata.nasa.gov/) account
+1. [curl](https://curl.haxx.se/) for downloading files
+1. An [Earthdata](https://earthdata.nasa.gov/) account for authentication
 
 ## Processing the frames
 
@@ -18,4 +19,4 @@ python run.py -start " 2018-08-01" -end " 2018-11-30" -auth "username:password" 
 
 You can get your username and password [here](https://ghrcdrive.nsstc.nasa.gov/drive/).
 
-Ensure the directories `-ddir` and `-fdir` have sufficient space. If you'd like to remove the data files after you are done processing a frame, add `-del 1` to the command.
+Data files are deleted after frame is finished processing by default. If you'd like to keep the (very large) data files after you are done processing a frame, add `-del 1` to the command.
