@@ -2,6 +2,7 @@
 
 # Details: https://ghrc.nsstc.nasa.gov/home/data-recipes/infrared-global-geostationary-composite-quick-view
 # Data source: https://ghrc.nsstc.nasa.gov/pub/globalir/data/
+# Doc: https://ghrc.nsstc.nasa.gov/pub/globalir/doc/globalir_dataset.pdf
 
 import argparse
 import math
