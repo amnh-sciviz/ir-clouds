@@ -23,7 +23,7 @@ parser.add_argument('-overwrite', dest="OVERWRITE", default=0, type=int, help="O
 parser.add_argument('-del', dest="DELETE_DATA", default=1, type=int, help="Delete data after processing frame?")
 args = parser.parse_args()
 
-DATE_START = tuple([int(p) for p in args.DATE_START.strip()split("-")])
+DATE_START = tuple([int(p) for p in args.DATE_START.strip().split("-")])
 DATE_END = tuple([int(p) for p in args.DATE_END.strip().split("-")])
 AUTH = args.AUTH
 DATA_DIR = args.DATA_DIR
