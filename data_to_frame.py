@@ -16,11 +16,18 @@ import sys
 # input
 parser = argparse.ArgumentParser()
 parser.add_argument('-in', dest="INPUT_FILE", default="data/globir.18305.0015", help="Input data file")
-parser.add_argument('-out', dest="OUTPUT_FILE", default="frames/globir.18305.0015.png", help="Output file")
+parser.add_argument('-out', dest="OUTPUT_FILE", default="frames/%s.png", help="Output file")
 args = parser.parse_args()
 
 INPUT_FILE = args.INPUT_FILE
 OUTPUT_FILE = args.OUTPUT_FILE
+
+if "%" in OUTPUT_FILE:
+    OUTPUT_FILE = OUTPUT_FILE % INPUT_FILE.split("/")[-1]
+
+NORTH, SOUTH = (66.0, -61.0)
+WEST = 70.0
+LON_OFFSET = (180.0 - WEST) / 360.0 # lon will be converted to -180.0 -> 180.0
 
 header = []
 pixels = None
@@ -35,6 +42,9 @@ with open(INPUT_FILE) as infile:
     format = "%4dB" % (elements)
     dataOffset = header[33]   # offset to data array (bytes)
 
+    offsetLeft = int(round(elements * LON_OFFSET))
+    offsetRight = elements - offsetLeft
+
     print("lines: %s, elements: %s, offset: %s" % (lines, elements, dataOffset))
     pixels = np.zeros((lines, elements), dtype=np.int8)
 
@@ -45,7 +55,10 @@ with open(INPUT_FILE) as infile:
         lineStringLen = len(lineString)
         try:
             row = struct.unpack(format, lineString)
-            pixels[line] = np.array(row).astype(np.int8)
+            row = np.array(row).astype(np.int8)
+            if LON_OFFSET < 1.0:
+                row = np.concatenate((row[offsetLeft:], row[:offsetLeft]), axis=0)
+            pixels[line] = row
         except struct.error:
             # do nothing
             # print("%s != %s" % (lineStringLen, elements))
