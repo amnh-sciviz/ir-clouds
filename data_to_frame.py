@@ -10,23 +10,29 @@ import os
 import numpy as np
 from PIL import Image
 from pprint import pprint
+from projection import projectApian
 import struct
 import sys
 
 # input
 parser = argparse.ArgumentParser()
-parser.add_argument('-in', dest="INPUT_FILE", default="data/globir.18305.0015", help="Input data file")
+parser.add_argument('-in', dest="INPUT_FILE", default="data/globir.18319.2345", help="Input data file")
 parser.add_argument('-out', dest="OUTPUT_FILE", default="frames/%s.png", help="Output file")
+parser.add_argument('-width', dest="WIDTH", default=9900, type=int, help="Width of output image")
+parser.add_argument('-proj', dest="PROJECTION", default=1, type=int, help="Do projection?")
 args = parser.parse_args()
 
 INPUT_FILE = args.INPUT_FILE
 OUTPUT_FILE = args.OUTPUT_FILE
+PROJECTION = args.PROJECTION
+WIDTH = args.WIDTH
+HEIGHT = WIDTH/2
 
 if "%" in OUTPUT_FILE:
     OUTPUT_FILE = OUTPUT_FILE % INPUT_FILE.split("/")[-1]
 
 NORTH, SOUTH = (66.0, -61.0)
-WEST = 70.0
+WEST = 75.2 # https://en.wikipedia.org/wiki/GOES-16
 LON_OFFSET = (180.0 - WEST) / 360.0 # lon will be converted to -180.0 -> 180.0
 
 header = []
@@ -77,6 +83,12 @@ with open(INPUT_FILE) as infile:
     #     all_zeros = not np.any(row)
     #     if all_zeros:
     #         pixels = np.delete(pixels, i, 0)
+
+# Do projection
+if PROJECTION:
+    print("Projecting...")
+    dest = np.zeros((HEIGHT, WIDTH), dtype=np.int8)
+    pixels = projectApian(pixels, dest, north=NORTH, south=SOUTH)
 
 if pixels is not None:
     print("Saving %s..." % OUTPUT_FILE)
