@@ -10,7 +10,7 @@ import os
 import numpy as np
 from PIL import Image
 from pprint import pprint
-from projection import projectApian
+from projection import mercatorToEquirectangular
 import struct
 import sys
 
@@ -18,7 +18,7 @@ import sys
 parser = argparse.ArgumentParser()
 parser.add_argument('-in', dest="INPUT_FILE", default="data/globir.18319.2345", help="Input data file")
 parser.add_argument('-out', dest="OUTPUT_FILE", default="frames/%s.png", help="Output file")
-parser.add_argument('-width', dest="WIDTH", default=9900, type=int, help="Width of output image")
+parser.add_argument('-width', dest="WIDTH", default=9896, type=int, help="Width of output image")
 parser.add_argument('-proj', dest="PROJECTION", default=1, type=int, help="Do projection?")
 args = parser.parse_args()
 
@@ -26,14 +26,15 @@ INPUT_FILE = args.INPUT_FILE
 OUTPUT_FILE = args.OUTPUT_FILE
 PROJECTION = args.PROJECTION
 WIDTH = args.WIDTH
-HEIGHT = WIDTH/2
 
 if "%" in OUTPUT_FILE:
     OUTPUT_FILE = OUTPUT_FILE % INPUT_FILE.split("/")[-1]
 
-NORTH, SOUTH = (66.0, -61.0)
+NORTH, SOUTH = (70.0, -69.0)
 WEST = 75.2 # https://en.wikipedia.org/wiki/GOES-16
 LON_OFFSET = (180.0 - WEST) / 360.0 # lon will be converted to -180.0 -> 180.0
+HEIGHT = int(round(((NORTH - SOUTH) / 180.0) * (WIDTH / 2.0)))
+print("%s x %s" % (WIDTH, HEIGHT))
 
 header = []
 pixels = None
@@ -88,7 +89,10 @@ with open(INPUT_FILE) as infile:
 if PROJECTION:
     print("Projecting...")
     dest = np.zeros((HEIGHT, WIDTH), dtype=np.int8)
-    pixels = projectApian(pixels, dest, north=NORTH, south=SOUTH)
+    pixels = mercatorToEquirectangular(pixels, dest, north=NORTH, south=SOUTH)
+
+    # remove rows of black
+    # pixels = pixels[~np.all(pixels <= 0, axis=1)]
 
 if pixels is not None:
     print("Saving %s..." % OUTPUT_FILE)
