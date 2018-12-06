@@ -20,19 +20,21 @@ parser.add_argument('-in', dest="INPUT_FILE", default="data/globir.18319.2345", 
 parser.add_argument('-out', dest="OUTPUT_FILE", default="frames/%s.png", help="Output file")
 parser.add_argument('-width', dest="WIDTH", default=9896, type=int, help="Width of output image")
 parser.add_argument('-proj', dest="PROJECTION", default=1, type=int, help="Do projection?")
+parser.add_argument('-offset', dest="OFFSET", default=0, type=int, help="Do offset?")
 args = parser.parse_args()
 
 INPUT_FILE = args.INPUT_FILE
 OUTPUT_FILE = args.OUTPUT_FILE
-PROJECTION = args.PROJECTION
 WIDTH = args.WIDTH
+PROJECTION = args.PROJECTION > 0
+OFFSET = args.OFFSET > 0
 
 if "%" in OUTPUT_FILE:
     OUTPUT_FILE = OUTPUT_FILE % INPUT_FILE.split("/")[-1]
 
-NORTH, SOUTH = (70.0, -69.0)
-WEST = 75.2 # https://en.wikipedia.org/wiki/GOES-16
-LON_OFFSET = (180.0 - WEST) / 360.0 # lon will be converted to -180.0 -> 180.0
+NORTH, SOUTH = (70.6, -67.6)
+WEST = 72.1 # https://en.wikipedia.org/wiki/GOES-16
+LON_OFFSET = 0 if not OFFSET else (180.0 - WEST) / 360.0 # lon will be converted to -180.0 -> 180.0
 HEIGHT = int(round(((NORTH - SOUTH) / 180.0) * (WIDTH / 2.0)))
 print("%s x %s" % (WIDTH, HEIGHT))
 

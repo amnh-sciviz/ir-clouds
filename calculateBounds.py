@@ -31,4 +31,4 @@ imW, imH = im.size
 # (math.atan(math.exp((imH / 2.0) / (imW / (2.0 * math.pi)))) - (math.pi / 4.0)) * 2.0 = math.radians(NORTH)
 north = math.degrees((math.atan(math.exp((imH / 2.0) / (imW / (2.0 * math.pi)))) - (math.pi / 4.0)) * 2.0)
 south = -north
-print("%s -> %s" % (north, south))
+print("%s -> %s (total = %s)" % (north, south, north*2))
