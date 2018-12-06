@@ -7,6 +7,7 @@ Scripts for generating images sequences for IR cloud data
 1. [Python](https://www.python.org/) 2.7.x+
 1. [Python Pillow](https://pillow.readthedocs.io/en/5.3.x/) - for image generation
 1. [curl](https://curl.haxx.se/) for downloading files
+1. [pyopencl](https://documen.tician.de/pyopencl/index.html) for efficient processing of projections
 1. An [Earthdata](https://earthdata.nasa.gov/) account for authentication
 
 ## Processing the frames
