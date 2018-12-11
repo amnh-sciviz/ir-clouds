@@ -17,6 +17,7 @@ parser.add_argument('-start', dest="DATE_START", default="2018-08-01", help="Dat
 parser.add_argument('-end', dest="DATE_END", default="2018-11-01", help="Date end")
 parser.add_argument('-ddir', dest="DATA_DIR", default="data/", help="Data directory")
 parser.add_argument('-fdir', dest="FRAME_DIR", default="frames/", help="Frame directory")
+parser.add_argument('-custom', dest="CUSTOM_FILES", default="", help="Path to a list of filenames separated by new lines")
 parser.add_argument('-log', dest="LOG_FILE", default="logs/errors.txt", help="Frame directory")
 parser.add_argument('-threads', dest="THREADS", default=3, type=int, help="Amount of parallel frames to process; -1 for maximum allowed by cpu")
 parser.add_argument('-overwrite', dest="OVERWRITE", default=0, type=int, help="Overwrite existing frames?")
@@ -32,6 +33,7 @@ THREADS = min(args.THREADS, multiprocessing.cpu_count()) if args.THREADS > 0 els
 OVERWRITE = (args.OVERWRITE > 0)
 DELETE_DATA = (args.DELETE_DATA > 0)
 LOG_FILE = args.LOG_FILE
+CUSTOM_FILES = args.CUSTOM_FILES
 
 BASE_URL = "https://ghrcdrive.nsstc.nasa.gov/pub/globalir/data/"
 
@@ -49,27 +51,44 @@ def makeDirectories(filenames):
 makeDirectories([DATA_DIR, FRAME_DIR])
 
 params = []
-date = dateStart
-while date <= dateEnd:
 
-    # 30-minute increments = 24 x 2
-    for t in range(48):
-        minutes = t * 30 + 15
-        hours = str(minutes / 60).zfill(2)
-        minutes = str(minutes % 60).zfill(2)
-        timeString = hours + minutes
-
-        filename = date.strftime("globir.%y%j.") + timeString
-        # e.g. https://ghrcdrive.nsstc.nasa.gov/pub/globalir/data/2018/0806/globir.18218.0015
+if len(CUSTOM_FILES) > 0:
+    filenames = []
+    with open(CUSTOM_FILES) as f:
+        filenames = f.read().splitlines()
+    for fn in filenames:
+        filename = fn.strip()
+        dateString = filename.split(".")[-2]
+        date = datetime.datetime.strptime(dateString, "%y%j").date()
         url = BASE_URL + date.strftime("%Y/%m%d/") + filename
-
         params.append({
             "url": url,
             "datafile": DATA_DIR + filename,
             "imagefile": FRAME_DIR + filename + ".png"
         })
 
-    date += datetime.timedelta(days=1)
+else:
+    date = dateStart
+    while date <= dateEnd:
+
+        # 30-minute increments = 24 x 2
+        for t in range(48):
+            minutes = t * 30 + 15
+            hours = str(minutes / 60).zfill(2)
+            minutes = str(minutes % 60).zfill(2)
+            timeString = hours + minutes
+
+            filename = date.strftime("globir.%y%j.") + timeString
+            # e.g. https://ghrcdrive.nsstc.nasa.gov/pub/globalir/data/2018/0806/globir.18218.0015
+            url = BASE_URL + date.strftime("%Y/%m%d/") + filename
+
+            params.append({
+                "url": url,
+                "datafile": DATA_DIR + filename,
+                "imagefile": FRAME_DIR + filename + ".png"
+            })
+
+        date += datetime.timedelta(days=1)
 
 def logMessage(filename, message):
     print(message)
