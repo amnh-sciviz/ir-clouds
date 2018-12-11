@@ -82,7 +82,14 @@ def downloadAndProcessFrame(p):
     datafile = p["datafile"]
     imagefile = p["imagefile"]
 
-    if not os.path.isfile(datafile):
+    imageFileExists = os.path.isfile(imagefile)
+    dataFileExists = os.path.isfile(datafile)
+
+    # already completed frame
+    if imageFileExists and not OVERWRITE:
+        return resp
+
+    if not dataFileExists:
         command = ['curl', '-O', '-L', '-u', AUTH, url] # We need -L because the URL redirects
         print(" ".join(command))
         finished = subprocess.check_call(command)
@@ -98,7 +105,7 @@ def downloadAndProcessFrame(p):
         resp["error"] = error
 
     # Otherwise, process frame
-    elif not os.path.isfile(imagefile) or OVERWRITE:
+    else:
         command = ['python', '-W', 'ignore', 'data_to_frame.py', '-in', datafile, '-out', imagefile]
         finished = subprocess.check_call(command)
 
